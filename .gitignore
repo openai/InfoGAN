@@ -1,0 +1,7 @@
+MNIST
+*.pyc
+.idea
+imgs
+logs
+ckt
+.ipynb_checkpoints
