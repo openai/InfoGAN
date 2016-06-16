@@ -10,6 +10,15 @@ In addition, please `pip install` the following packages:
 - `prettytensor`
 - `progressbar`
 
+## Running in Docker
+
+```bash
+$ git clone git@github.com:openai/InfoGAN.git
+$ docker run -v $(pwd)/InfoGAN:/InfoGAN -w /InfoGAN -it -p 8888:8888 gcr.io/tensorflow/tensorflow:r0.9rc0-devel
+root@X:/InfoGAN# pip install -r requirements.txt
+root@X:/InfoGAN# python launchers/run_mnist_exp.py
+```
+
 ## Running Experiment
 
 We provide the source code to run the MNIST example:
