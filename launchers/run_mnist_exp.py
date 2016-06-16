@@ -9,6 +9,7 @@ from infogan.models.regularized_gan import RegularizedGAN
 from infogan.algos.infogan_trainer import InfoGANTrainer
 from infogan.misc.utils import mkdir_p
 import dateutil
+import dateutil.tz
 import datetime
 
 if __name__ == "__main__":
