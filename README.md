@@ -9,6 +9,7 @@ This project currently requires the dev version of TensorFlow available on Githu
 In addition, please `pip install` the following packages:
 - `prettytensor`
 - `progressbar`
+- `dateutil`
 
 ## Running in Docker
 
