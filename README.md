@@ -25,7 +25,7 @@ root@X:/InfoGAN# python launchers/run_mnist_exp.py
 We provide the source code to run the MNIST example:
 
 ```bash
-python launchers/run_mnist_exp.py
+PYTHONPATH='.' python launchers/run_mnist_exp.py
 ```
 
 You can launch TensorBoard to view the generated images:
