@@ -1,4 +1,4 @@
-prettytensor
+prettytensor==0.6.2
 progressbar
 python-dateutil
 ipdb
