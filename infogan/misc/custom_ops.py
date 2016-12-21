@@ -13,7 +13,7 @@ class conv_batch_norm(pt.VarStoreMethod):
 
         shape = input_layer.shape
         shp = in_dim or shape[-1]
-        with tf.variable_scope(name) as scope:
+        with tf.variable_scope(tf.get_variable_scope(), reuse=False) as scope:
             self.gamma = self.variable("gamma", [shp], init=tf.random_normal_initializer(1., 0.02))
             self.beta = self.variable("beta", [shp], init=tf.constant_initializer(0.))
 
