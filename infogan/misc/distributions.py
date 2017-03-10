@@ -122,7 +122,7 @@ class Categorical(Distribution):
 
     def logli(self, x_var, dist_info):
         prob = dist_info["prob"]
-        return tf.reduce_sum(tf.log(prob + TINY) * x_var, reduction_indices=1)
+        return tf.reduce_sum(tf.log(prob + TINY) * x_var, axis=1)
 
     def prior_dist_info(self, batch_size):
         prob = tf.ones([batch_size, self.dim]) * floatX(1.0 / self.dim)
@@ -131,8 +131,8 @@ class Categorical(Distribution):
     def marginal_logli(self, x_var, dist_info):
         prob = dist_info["prob"]
         avg_prob = tf.tile(
-            tf.reduce_mean(prob, reduction_indices=0, keep_dims=True),
-            tf.pack([tf.shape(prob)[0], 1])
+            tf.reduce_mean(prob, axis=0, keep_dims=True),
+            tf.stack([tf.shape(prob)[0], 1])
         )
         return self.logli(x_var, dict(prob=avg_prob))
 
@@ -149,7 +149,7 @@ class Categorical(Distribution):
         q_prob = q["prob"]
         return tf.reduce_sum(
             p_prob * (tf.log(p_prob + TINY) - tf.log(q_prob + TINY)),
-            reduction_indices=1
+            axis=1
         )
 
     def sample(self, dist_info):
@@ -163,13 +163,13 @@ class Categorical(Distribution):
 
     def entropy(self, dist_info):
         prob = dist_info["prob"]
-        return -tf.reduce_sum(prob * tf.log(prob + TINY), reduction_indices=1)
+        return -tf.reduce_sum(prob * tf.log(prob + TINY), axis=1)
 
     def marginal_entropy(self, dist_info):
         prob = dist_info["prob"]
         avg_prob = tf.tile(
-            tf.reduce_mean(prob, reduction_indices=0, keep_dims=True),
-            tf.pack([tf.shape(prob)[0], 1])
+            tf.reduce_mean(prob, axis=0, keep_dims=True),
+            tf.stack([tf.shape(prob)[0], 1])
         )
         return self.entropy(dict(prob=avg_prob))
 
@@ -201,7 +201,7 @@ class Gaussian(Distribution):
         epsilon = (x_var - mean) / (stddev + TINY)
         return tf.reduce_sum(
             - 0.5 * np.log(2 * np.pi) - tf.log(stddev + TINY) - 0.5 * tf.square(epsilon),
-            reduction_indices=1,
+            axis=1,
         )
 
     def prior_dist_info(self, batch_size):
@@ -225,7 +225,7 @@ class Gaussian(Distribution):
         denominator = 2. * tf.square(q_stddev)
         return tf.reduce_sum(
             numerator / (denominator + TINY) + tf.log(q_stddev + TINY) - tf.log(p_stddev + TINY),
-            reduction_indices=1
+            axis=1
         )
 
     def sample(self, dist_info):
@@ -291,7 +291,7 @@ class Bernoulli(Distribution):
         p = dist_info["p"]
         return tf.reduce_sum(
             x_var * tf.log(p + TINY) + (1.0 - x_var) * tf.log(1.0 - p + TINY),
-            reduction_indices=1
+            axis=1
         )
 
     def nonreparam_logli(self, x_var, dist_info):
@@ -397,7 +397,7 @@ class Product(Distribution):
         """
         Join the per component tensor variables into a whole tensor
         """
-        return tf.concat(1, xs)
+        return tf.concat(axis=1, values=xs)
 
     def split_dist_flat(self, dist_flat):
         """
@@ -434,13 +434,13 @@ class Product(Distribution):
         ret = []
         for dist_info_i, dist_i in zip(self.split_dist_info(dist_info), self.dists):
             ret.append(tf.cast(dist_i.sample(dist_info_i), tf.float32))
-        return tf.concat(1, ret)
+        return tf.concat(axis=1, values=ret)
 
     def sample_prior(self, batch_size):
         ret = []
         for dist_i in self.dists:
             ret.append(tf.cast(dist_i.sample_prior(batch_size), tf.float32))
-        return tf.concat(1, ret)
+        return tf.concat(axis=1, values=ret)
 
     def logli(self, x_var, dist_info):
         ret = tf.constant(0.)
