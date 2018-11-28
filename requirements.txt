@@ -1,4 +1,4 @@
 prettytensor
-progressbar
+progressbar2
 python-dateutil
 ipdb
