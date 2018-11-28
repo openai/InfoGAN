@@ -9,31 +9,19 @@ class conv_batch_norm(pt.VarStoreMethod):
 
     def __call__(self, input_layer, epsilon=1e-5, momentum=0.1, name="batch_norm",
                  in_dim=None, phase=Phase.train):
-        self.ema = tf.train.ExponentialMovingAverage(decay=0.9)
-
         shape = input_layer.shape
         shp = in_dim or shape[-1]
-        with tf.variable_scope(name) as scope:
-            self.gamma = self.variable("gamma", [shp], init=tf.random_normal_initializer(1., 0.02))
-            self.beta = self.variable("beta", [shp], init=tf.constant_initializer(0.))
+        self.gamma = self.variable("gamma", [shp], init=tf.random_normal_initializer(1., 0.02))
+        self.beta = self.variable("beta", [shp], init=tf.constant_initializer(0.))
 
-            self.mean, self.variance = tf.nn.moments(input_layer.tensor, [0, 1, 2])
-            # sigh...tf's shape system is so..
-            self.mean.set_shape((shp,))
-            self.variance.set_shape((shp,))
-            self.ema_apply_op = self.ema.apply([self.mean, self.variance])
+        self.mean, self.variance = tf.nn.moments(input_layer, [0, 1, 2])
+        # sigh...tf's shape system is so..
+        self.mean.set_shape((shp,))
+        self.variance.set_shape((shp,))
 
-            if phase == Phase.train:
-                with tf.control_dependencies([self.ema_apply_op]):
-                    normalized_x = tf.nn.batch_norm_with_global_normalization(
-                        input_layer.tensor, self.mean, self.variance, self.beta, self.gamma, epsilon,
-                        scale_after_normalization=True)
-            else:
-                normalized_x = tf.nn.batch_norm_with_global_normalization(
-                    x, self.ema.average(self.mean), self.ema.average(self.variance), self.beta,
-                    self.gamma, epsilon,
-                    scale_after_normalization=True)
-            return input_layer.with_tensor(normalized_x, parameters=self.vars)
+        normalized_x = tf.nn.batch_normalization(input_layer, self.mean, 
+            self.variance, None, None, epsilon)
+        return input_layer.with_tensor(normalized_x, parameters=self.vars)
 
 
 pt.Register(assign_defaults=('phase'))(conv_batch_norm)
@@ -79,7 +67,7 @@ class custom_deconv2d(pt.VarStoreMethod):
                  k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02,
                  name="deconv2d"):
         output_shape[0] = input_layer.shape[0]
-        ts_output_shape = tf.pack(output_shape)
+        ts_output_shape = tf.stack(output_shape)
         with tf.variable_scope(name):
             # filter : [height, width, output_channels, in_channels]
             w = self.variable('w', [k_h, k_w, output_shape[-1], input_layer.shape[-1]],
@@ -108,7 +96,7 @@ class custom_fully_connected(pt.VarStoreMethod):
         input_ = input_layer.tensor
         try:
             if len(shape) == 4:
-                input_ = tf.reshape(input_, tf.pack([tf.shape(input_)[0], np.prod(shape[1:])]))
+                input_ = tf.reshape(input_, tf.stack([tf.shape(input_)[0], np.prod(shape[1:])]))
                 input_.set_shape([None, np.prod(shape[1:])])
                 shape = input_.get_shape().as_list()
 

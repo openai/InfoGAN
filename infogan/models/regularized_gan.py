@@ -13,6 +13,7 @@ class RegularizedGAN(object):
         :type batch_size: int
         :type network_type: string
         """
+        self.reuse = False
         self.output_dist = output_dist
         self.latent_spec = latent_spec
         self.latent_dist = Product([x for x, _ in latent_spec])
@@ -28,7 +29,7 @@ class RegularizedGAN(object):
 
         image_size = image_shape[0]
         if network_type == "mnist":
-            with tf.variable_scope("d_net"):
+            with tf.variable_scope("d_net", reuse=self.reuse):
                 shared_template = \
                     (pt.template("input").
                      reshape([-1] + list(image_shape)).
@@ -48,7 +49,7 @@ class RegularizedGAN(object):
                      apply(leaky_rectify).
                      custom_fully_connected(self.reg_latent_dist.dist_flat_dim))
 
-            with tf.variable_scope("g_net"):
+            with tf.variable_scope("g_net", reuse=self.reuse):
                 self.generator_template = \
                     (pt.template("input").
                      custom_fully_connected(1024).
@@ -63,6 +64,7 @@ class RegularizedGAN(object):
                      apply(tf.nn.relu).
                      custom_deconv2d([0] + list(image_shape), k_h=4, k_w=4).
                      flatten())
+            self.reuse = True
         else:
             raise NotImplementedError
 
