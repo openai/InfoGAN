@@ -19,7 +19,7 @@ In addition, please `pip install` the following packages:
 $ git clone git@github.com:openai/InfoGAN.git
 $ docker run -v $(pwd)/InfoGAN:/InfoGAN -w /InfoGAN -it -p 8888:8888 gcr.io/tensorflow/tensorflow:r0.9rc0-devel
 root@X:/InfoGAN# pip install -r requirements.txt
-root@X:/InfoGAN# python launchers/run_mnist_exp.py
+root@X:/InfoGAN# PYTHONPATH='.' python launchers/run_mnist_exp.py
 ```
 
 ## Running Experiment
@@ -33,5 +33,5 @@ PYTHONPATH='.' python launchers/run_mnist_exp.py
 You can launch TensorBoard to view the generated images:
 
 ```bash
-tensorboard --logdir logs/mnist
+tensorboard --port 8888 --logdir logs/mnist
 ```
